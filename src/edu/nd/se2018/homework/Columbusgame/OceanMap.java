@@ -43,7 +43,7 @@ public class OceanMap {
 		}
 	}
 	
-	public void insertIsland(ObservableList<Node >root, int scale, int x, int y) {
+	public void insertIsland(ObservableList<Node> root, int scale, int x, int y) {
 		Rectangle rect = new Rectangle(x*scale, y*scale, scale, scale);
 		rect.setStroke(Color.BLACK);
 		rect.setFill(Color.GREEN);
