@@ -1,4 +1,4 @@
-package edu.nd.se2018.homework.ColumbusGame;
+package edu.nd.se2018.homework.Columbusgame;
 
 import java.util.Observable;
 
