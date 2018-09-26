@@ -1,7 +1,9 @@
 package edu.nd.sarec.railwaycrossing.model.infrastructure.gate;
 
+import java.util.HashSet;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Set;
 
 import edu.nd.sarec.railwaycrossing.model.vehicles.Train;
 import javafx.scene.layout.Pane;
@@ -20,8 +22,10 @@ public class CrossingGate extends Observable implements Observer{
 	private int anchorY;
 	private int movingX;
 	private int movingY;
-	private int triggerPoint;
-	private int exitPoint;
+	private int triggerPointR;
+	private int exitPointR;
+	private int triggerPointL;
+	private int exitPointL;
 
 	private IGateState gateClosed;
 	private IGateState gateOpen;
@@ -30,6 +34,7 @@ public class CrossingGate extends Observable implements Observer{
 	private IGateState currentGateState;
 	private Line line; 
 	private Pane root;
+	Set<Train> inRange = new HashSet<>();
 	
 	String gateName;
 	
@@ -40,8 +45,10 @@ public class CrossingGate extends Observable implements Observer{
 		anchorY = yPosition;
 		movingX = anchorX;
 		movingY = anchorY-60;
-		triggerPoint = anchorX+250;
-		exitPoint = anchorX-250;
+		triggerPointR = anchorX+250;
+		exitPointL = anchorX+250;
+		exitPointR = anchorX-250;
+		triggerPointL = anchorX-250;
 		
 		// Gate elements
 		line = new Line(anchorX, anchorY,movingX,movingY);
@@ -119,11 +126,30 @@ public class CrossingGate extends Observable implements Observer{
 	public void update(Observable o, Object arg) {
 		if (o instanceof Train){
 			Train train = (Train)o;
-			if (train.getVehicleX() < exitPoint)
-				currentGateState.leaveStation();
-			else if(train.getVehicleX() < triggerPoint){
-				currentGateState.approachStation();
-			} 
+			if (train.getVehicleY() == 475) {
+				if (train.getVehicleX() < triggerPointR && train.getVehicleX() > exitPointR) {
+					inRange.add(train);
+					currentGateState.approachStation();
+				}
+				else {
+					inRange.remove(train);
+					if (inRange.isEmpty()) {
+						currentGateState.leaveStation();
+					}
+				}
+			}
+			if (train.getVehicleY() == 525) {
+				if (train.getVehicleX() > triggerPointL && train.getVehicleX() < exitPointL) {
+					inRange.add(train);
+					currentGateState.approachStation();
+				}
+				else {
+					inRange.remove(train);
+					if (inRange.isEmpty()) {
+						currentGateState.leaveStation();
+					}
+				}
+			}
 		}	
 	}
 }

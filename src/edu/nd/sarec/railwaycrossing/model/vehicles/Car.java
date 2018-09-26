@@ -1,7 +1,10 @@
 package edu.nd.sarec.railwaycrossing.model.vehicles;
 
+import java.util.HashSet;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Random;
+import java.util.Set;
 
 import edu.nd.sarec.railwaycrossing.model.infrastructure.gate.CrossingGate;
 import edu.nd.sarec.railwaycrossing.view.CarImageSelector;
@@ -21,6 +24,8 @@ public class Car extends Observable implements IVehicle, Observer{
 	private boolean gateDown = false;
 	private double leadCarY = -1;  // Current Y position of car directly infront of this one
 	private double speed = 0.5;
+	private boolean crossing = false;
+	Set<Car> belowTracks = new HashSet<Car>();
 		
 	/**
 	 * Constructor
@@ -34,6 +39,12 @@ public class Car extends Observable implements IVehicle, Observer{
 		ivCar = new ImageView(CarImageSelector.getImage());
 		ivCar.setX(getVehicleX());
 		ivCar.setY(getVehicleY());
+
+		Random rand = new Random();
+		int n = rand.nextInt(5)+1;
+		if (n == 1 && getVehicleX() == 791) {
+			crossing = true;
+		}
 	}
 		
 	@Override
@@ -55,6 +66,10 @@ public class Car extends Observable implements IVehicle, Observer{
 	public void move(){
 		boolean canMove = true; 
 		
+		if (getVehicleY() > 550 && getVehicleX() < 391) {
+			belowTracks.add(this);
+		}
+		
 		// First case.  Car is at the front of the stopping line.
 		if (gateDown && getVehicleY() < 430 && getVehicleY()> 390)
 			canMove = false;
@@ -63,9 +78,31 @@ public class Car extends Observable implements IVehicle, Observer{
 		if (leadCarY != -1  && getDistanceToLeadCar() < 50)
 			canMove = false;
 		
-		if (canMove){
+		if (canMove && !crossing){
 			currentY+=speed;
 			ivCar.setY(currentY);
+		}
+		else if (canMove && crossing) {
+			if (getVehicleY() > 650) {
+				if (getVehicleX() < 391) {
+					crossing = false;
+				}
+				else {
+					deleteObservers();
+					currentX-=speed;
+					ivCar.setX(currentX);
+				}
+				
+			}
+			else {
+				if (belowTracks.isEmpty()) {
+					currentY+=speed;
+					ivCar.setY(currentY);
+				}
+			}
+		}
+		
+		if (!crossing) {
 			setChanged();
 			notifyObservers();
 		}
